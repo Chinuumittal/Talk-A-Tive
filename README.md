@@ -261,7 +261,7 @@ notification     → Handle message notifications
 **Chinu Mittal**
 *Computer Science Engineering Student | Full-Stack Developer*
  
-[![GitHub](https://img.shields.io/badge/GitHub-chinu--mittal-181717?style=for-the-badge&logo=github)](https://github.com/chinu-mittal)
+[![GitHub](https://img.shields.io/badge/GitHub-chinu--mittal-181717?style=for-the-badge&logo=github)](https://github.com/Chinuumittal)
  
 </div>
  
