@@ -156,10 +156,7 @@ Create a `.env` file inside the **`backend/`** folder:
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_super_secret_key
-NODE_ENV=development
 ```
- 
-> ⚠️ Never commit your `.env` file. It's already in `.gitignore`.
  
 ---
  
@@ -180,7 +177,7 @@ cd frontend
 npm start
 ```
  
-> Runs on: `http://localhost:3000`
+> Runs on: `http://localhost:5173`
  
 ---
  
