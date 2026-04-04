@@ -40,7 +40,7 @@ const accessChat = asyncHandler(async (req,res) => {
 
 const fetchChats = asyncHandler(async (req, res) => {
     try {
-        const results = await Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
+        let results = await Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
             .populate("users", "-password")
             .populate("groupAdmin", "-password")
             .populate("latestMessage")
