@@ -8,7 +8,7 @@ import { AddIcon } from '@chakra-ui/icons';
 import { getSender } from '../../congif/ChatLogics';
 import GroupChatModal from './GroupChatModal';
 
-const MyChats = () => {
+const MyChats = ({ fetchAgain }) => {
   const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
   const { onOpen } = useDisclosure();
   const [loggedUser, setLoggedUser] = useState();
@@ -44,7 +44,7 @@ const MyChats = () => {
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
-  }, []);
+  }, [fetchAgain]);
 
   const getSenderName = (loggedUser, users) => {
     if (!loggedUser || !users || users.length < 2) return users[0]?.name || "Unknown User";
@@ -57,13 +57,13 @@ const MyChats = () => {
       flexDir="column"
       alignItems="center"
       p={4}
-      bg="rgba(255, 255, 255, 0.85)"
-      backdropFilter="blur(10px)"
+      bg="rgba(255, 255, 255, 0.75)"
+      backdropFilter="blur(16px)"
       w={{ base: "100%", md: "31%" }}
-      borderRadius="xl"
+      borderRadius="2xl"
       borderWidth="1px"
-      borderColor="gray.200"
-      boxShadow="xl"
+      borderColor="whiteAlpha.600"
+      boxShadow="0 8px 32px 0 rgba(31, 38, 135, 0.15)"
     >
       <Box
         pb={4}
@@ -108,12 +108,11 @@ const MyChats = () => {
         display="flex"
         flexDir="column"
         p={3}
-        bg="gray.50"
+        bg="transparent"
         w="100%"
         h="100%"
-        borderRadius="xl"
+        borderRadius="2xl"
         overflowY="auto"
-        boxShadow="inner"
       >
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" h="100%">
@@ -125,20 +124,20 @@ const MyChats = () => {
               <Box
                 onClick={() => setSelectedChat(chat)}
                 cursor="pointer"
-                bg={selectedChat === chat ? "linear-gradient(to right, #319795, #38B2AC)" : "white"}
+                bg={selectedChat === chat ? "linear-gradient(to right, #38B2AC, #4FD1C5)" : "rgba(255, 255, 255, 0.4)"}
                 color={selectedChat === chat ? "white" : "gray.800"}
                 px={4}
                 py={3}
                 borderRadius="xl"
                 key={chat._id}
-                boxShadow={selectedChat === chat ? "md" : "sm"}
+                boxShadow={selectedChat === chat ? "0px 4px 15px rgba(56, 178, 172, 0.3)" : "sm"}
                 transform={selectedChat === chat ? "scale(1.02)" : "scale(1)"}
                 _hover={{
-                  bg: selectedChat === chat ? "linear-gradient(to right, #2C7A7B, #319795)" : "gray.100",
+                  bg: selectedChat === chat ? "linear-gradient(to right, #319795, #38B2AC)" : "rgba(255, 255, 255, 0.8)",
                   transform: "scale(1.02)",
-                  boxShadow: "md"
+                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)"
                 }}
-                transition="all 0.2s ease-in-out"
+                transition="all 0.3s ease"
               >
                 <Text fontWeight={selectedChat === chat ? "bold" : "semibold"} fontSize="md">
                   {!chat.isGroupChat ? getSender(loggedUser, chat.users) : chat.chatName}

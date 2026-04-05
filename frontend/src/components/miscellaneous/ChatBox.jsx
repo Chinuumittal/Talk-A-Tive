@@ -1,34 +1,26 @@
 import React from 'react';
-import { Box, Text } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { ChatState } from '../../context/chatprovider';
+import SingleChat from './SingleChat';
 
-const ChatBox = () => {
+const ChatBox = ({ fetchAgain, setFetchAgain }) => {
   const { selectedChat } = ChatState();
 
   return (
     <Box
       display={{ base: selectedChat ? "flex" : "none", md: "flex" }}
       alignItems="center"
-      justifyContent="center"
       flexDir="column"
       p={3}
-      bg="rgba(255, 255, 255, 0.85)"
-      backdropFilter="blur(10px)"
+      bg="rgba(255, 255, 255, 0.75)"
+      backdropFilter="blur(16px)"
       w={{ base: "100%", md: "68%" }}
-      borderRadius="xl"
+      borderRadius="2xl"
       borderWidth="1px"
-      borderColor="gray.200"
-      boxShadow="xl"
+      borderColor="whiteAlpha.600"
+      boxShadow="0 8px 32px 0 rgba(31, 38, 135, 0.15)"
     >
-      {selectedChat ? (
-        <Text fontSize="3xl" fontFamily="'Inter', 'Work sans', sans-serif" color="gray.600">
-          Chat content goes here...
-        </Text>
-      ) : (
-        <Text fontSize="3xl" fontFamily="'Inter', 'Work sans', sans-serif" color="gray.400">
-          Click on a user to start chatting
-        </Text>
-      )}
+      <SingleChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />
     </Box>
   );
 };
