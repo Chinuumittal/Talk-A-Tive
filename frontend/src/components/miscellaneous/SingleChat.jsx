@@ -23,6 +23,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             justifyContent={{ base: "space-between" }}
             alignItems="center"
           >
+            
             <IconButton
               display={{ base: "flex", md: "none" }}
               icon={<ArrowBackIcon />}
