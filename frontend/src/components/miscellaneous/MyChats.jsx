@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useDisclosure } from '@chakra-ui/react'; 
 import { AddIcon } from '@chakra-ui/icons';
 import { getSender } from '../../congif/ChatLogics';
+import GroupChatModal from './GroupChatModal';
 
 const MyChats = () => {
   const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
@@ -81,25 +82,26 @@ const MyChats = () => {
         >
           My Chats
         </Text>
-        <Button
-          display="flex"
-          fontSize={{ base: "14px", md: "13px" }}
-          rightIcon={<AddIcon />}
-          onClick={onOpen}
-          bgGradient="linear(to-r, teal.400, teal.500)"
-          color="white"
-          borderRadius="lg"
-          px={4}
-          py={2}
-          _hover={{
-            bgGradient: "linear(to-r, teal.500, teal.600)",
-            transform: "translateY(-2px)",
-            boxShadow: "lg"
-          }}
-          transition="all 0.2s"
-        >
-          New Group Chat
-        </Button>
+        <GroupChatModal>
+          <Button
+            display="flex"
+            fontSize={{ base: "14px", md: "13px" }}
+            rightIcon={<AddIcon />}
+            bgGradient="linear(to-r, teal.400, teal.500)"
+            color="white"
+            borderRadius="lg"
+            px={4}
+            py={2}
+            _hover={{
+              bgGradient: "linear(to-r, teal.500, teal.600)",
+              transform: "translateY(-2px)",
+              boxShadow: "lg"
+            }}
+            transition="all 0.2s"
+          >
+            New Group Chat
+          </Button>
+        </GroupChatModal>
       </Box>
 
       <Box
