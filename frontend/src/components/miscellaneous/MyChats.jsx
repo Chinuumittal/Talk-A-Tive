@@ -9,7 +9,7 @@ import { getSender } from '../../congif/ChatLogics';
 import GroupChatModal from './GroupChatModal';
 
 const MyChats = ({ fetchAgain }) => {
-  const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
+  const { selectedChat, setSelectedChat, user, chats, setChats, notification, setNotification } = ChatState();
   const { onOpen } = useDisclosure();
   const [loggedUser, setLoggedUser] = useState();
   const [loading, setLoading] = useState(false);
@@ -120,9 +120,14 @@ const MyChats = ({ fetchAgain }) => {
           </Box>
         ) : chats && chats.length > 0 ? (
           <Stack spacing={3}>
-            {chats.map((chat) => (
+            {chats.map((chat) => {
+              const unreadCount = notification.filter(n => n.chat._id === chat._id).length;
+              return (
               <Box
-                onClick={() => setSelectedChat(chat)}
+                onClick={() => {
+                  setSelectedChat(chat);
+                  setNotification(notification.filter(n => n.chat._id !== chat._id));
+                }}
                 cursor="pointer"
                 bg={selectedChat === chat ? "linear-gradient(to right, #38B2AC, #4FD1C5)" : "rgba(255, 255, 255, 0.4)"}
                 color={selectedChat === chat ? "white" : "gray.800"}
@@ -138,23 +143,42 @@ const MyChats = ({ fetchAgain }) => {
                   boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)"
                 }}
                 transition="all 0.3s ease"
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
               >
-                <Text fontWeight={selectedChat === chat ? "bold" : "semibold"} fontSize="md">
-                  {!chat.isGroupChat ? getSender(loggedUser, chat.users) : chat.chatName}
-                </Text>
-                {chat.latestMessage && (
-                  <Text 
-                    fontSize="sm" 
-                    color={selectedChat === chat ? "whiteAlpha.800" : "gray.500"}
-                    noOfLines={1}
-                    mt={1}
+                <Box maxWidth="80%">
+                  <Text fontWeight={selectedChat === chat ? "bold" : "semibold"} fontSize="md" isTruncated>
+                    {!chat.isGroupChat ? getSender(loggedUser, chat.users) : chat.chatName}
+                  </Text>
+                  {chat.latestMessage && (
+                    <Text 
+                      fontSize="sm" 
+                      color={selectedChat === chat ? "whiteAlpha.800" : "gray.500"}
+                      noOfLines={1}
+                      mt={1}
+                    >
+                      <b>{chat.latestMessage.sender.name}: </b>
+                      {chat.latestMessage.content}
+                    </Text>
+                  )}
+                </Box>
+                {unreadCount > 0 && (
+                  <Text
+                    fontSize="xs"
+                    bg="red.500"
+                    color="white"
+                    px={2}
+                    py={1}
+                    borderRadius="full"
+                    fontWeight="bold"
+                    flexShrink={0}
                   >
-                    <b>{chat.latestMessage.sender.name}: </b>
-                    {chat.latestMessage.content}
+                    {unreadCount} New
                   </Text>
                 )}
               </Box>
-            ))}
+            )})}
           </Stack>
         ) : (
           <Box display="flex" justifyContent="center" alignItems="center" h="100%" flexDir="column">
