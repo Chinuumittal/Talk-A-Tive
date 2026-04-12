@@ -99,20 +99,26 @@ const SideDrawer = () => {
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        bg="white"
+        bg="rgba(255, 255, 255, 0.2)"
+        backdropFilter="blur(20px)"
+        borderBottomWidth="1px"
+        borderColor="whiteAlpha.400"
+        boxShadow="0 4px 30px rgba(0, 0, 0, 0.1)"
         w="100%"
-        p="5px 10px"
-        borderWidth="5px"
+        p="10px 15px"
+        color="white"
+        position="relative"
+        zIndex="100"
       >
         <Tooltip label="Search Users to chat" hasArrow placement="bottom-end">
-          <Button variant="ghost" onClick={onOpen}>
+          <Button variant="ghost" color="white" _hover={{ bg: "rgba(255,255,255,0.3)" }} onClick={onOpen}>
             <i className="fas fa-search"></i>
             <Text display={{ base: "none", md: "flex" }} px="4">
               Search User
             </Text>
           </Button>
         </Tooltip>
-        <Text fontSize="2xl" fontFamily="work sans">
+        <Text fontSize="3xl" fontFamily="'Outfit', sans-serif" fontWeight="bold" color="white" textShadow="0 2px 10px rgba(0,0,0,0.3)" letterSpacing="wider">
           Talk-A-Tive
         </Text>
         <div>
@@ -132,8 +138,8 @@ const SideDrawer = () => {
                 </Badge>
               )}
             </MenuButton>
-            <MenuList pl={2}>
-              {!notification.length && "No New Messages"}
+            <MenuList pl={2} color="black" zIndex="100">
+              {!notification.length && <MenuItem>No New Messages</MenuItem>}
               {notification.map((notif) => (
                 <MenuItem
                   key={notif._id}
@@ -150,7 +156,7 @@ const SideDrawer = () => {
             </MenuList>
           </Menu>
           <Menu>
-            <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+            <MenuButton as={Button} rightIcon={<ChevronDownIcon />} bg="transparent" _hover={{ bg: "whiteAlpha.300" }} _active={{ bg: "whiteAlpha.400" }}>
               <Avatar
                 size="sm"
                 cursor="pointer"
@@ -158,7 +164,7 @@ const SideDrawer = () => {
                 src={user?.pic}
               />
             </MenuButton>
-            <MenuList>
+            <MenuList color="black" zIndex="100">
               <ProfileModal user={user}>
                 <MenuItem>My Profile</MenuItem>
               </ProfileModal>

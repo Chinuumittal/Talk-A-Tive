@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, IconButton, Spinner, FormControl, Input, useToast } from '@chakra-ui/react';
-import { ArrowBackIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon, AttachmentIcon } from '@chakra-ui/icons';
+import { InputGroup, InputRightElement } from '@chakra-ui/react';
 import { ChatState } from '../../context/chatprovider';
 import { getSender, getSenderFull } from '../../congif/ChatLogics';
 import ProfileModal from './ProfileModal';
@@ -19,6 +20,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [mediaLoading, setMediaLoading] = useState(false);
   const toast = useToast();
 
   const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
@@ -92,6 +94,73 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         });
       }
     }
+  };
+
+  const postMedia = (file) => {
+    if (!file) return;
+
+    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+      toast({
+        title: "Please select an image or video file",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
+
+    setMediaLoading(true);
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "chat-app");
+    data.append("cloud_name", "dwr8c1dkd");
+
+    const endpoint = file.type.startsWith("video/") 
+        ? "https://api.cloudinary.com/v1_1/dwr8c1dkd/video/upload"
+        : "https://api.cloudinary.com/v1_1/dwr8c1dkd/image/upload";
+
+    fetch(endpoint, {
+      method: "post",
+      body: data,
+    })
+    .then((res) => res.json())
+    .then(async (data) => {
+      const mediaUrl = data.secure_url || data.url;
+      const messageType = file.type.startsWith("video/") ? "video" : "image";
+      
+      try {
+        const config = {
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+        };
+
+        const resData = await axios.post(
+          "/api/message",
+          {
+            content: mediaUrl,
+            chatId: selectedChat._id,
+            messageType: messageType,
+          },
+          config
+        );
+
+        socket.emit("new message", resData.data);
+        setMessages((prevMessages) => [...prevMessages, resData.data]);
+        setFetchAgain(!fetchAgain);
+        setMediaLoading(false);
+      } catch (error) {
+        toast({ title: "Failed to send media", status: "error", duration: 5000, isClosable: true, position: "bottom" });
+        setMediaLoading(false);
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      setMediaLoading(false);
+      toast({ title: "Error uploading media", status: "error", duration: 5000, isClosable: true, position: "bottom" });
+    });
   };
 
   useEffect(() => {
@@ -219,15 +288,32 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
               </div>
             )}
             
-            <FormControl onKeyDown={sendMessage} isRequired mt={3}>
+            <FormControl onKeyDown={sendMessage} mt={3}>
               {isTyping ? <div>Typing...</div> : <></>}
-              <Input
-                variant="filled"
-                bg="#E0E0E0"
-                placeholder="Enter a message.."
-                value={newMessage}
-                onChange={typingHandler}
-              />
+              {mediaLoading && <Spinner alignSelf="center" />}
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Input
+                  variant="filled"
+                  bg="#E0E0E0"
+                  placeholder="Enter a message.."
+                  value={newMessage}
+                  onChange={typingHandler}
+                />
+                <IconButton
+                  aria-label="Upload media"
+                  icon={<AttachmentIcon />}
+                  ml={2}
+                  onClick={() => document.getElementById("media-upload").click()}
+                  isLoading={mediaLoading}
+                />
+                <input
+                  type="file"
+                  id="media-upload"
+                  accept="image/*,video/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => postMedia(e.target.files[0])}
+                />
+              </div>
             </FormControl>
           </Box>
         </>
