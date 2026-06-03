@@ -1,15 +1,15 @@
 import React from 'react';
 import axios from 'axios';
 import { ChatState } from '../../context/chatprovider'; 
-import { Box, Button, Text, Spinner, useToast, Stack } from '@chakra-ui/react';
+import { Box, Button, Text, Spinner, useToast, Stack, Avatar, AvatarBadge } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useDisclosure } from '@chakra-ui/react'; 
 import { AddIcon } from '@chakra-ui/icons';
-import { getSender } from '../../congif/ChatLogics';
+import { getSender, getSenderFull } from '../../congif/ChatLogics';
 import GroupChatModal from './GroupChatModal';
 
 const MyChats = ({ fetchAgain }) => {
-  const { selectedChat, setSelectedChat, user, chats, setChats, notification, setNotification } = ChatState();
+  const { selectedChat, setSelectedChat, user, chats, setChats, notification, setNotification, onlineUsers } = ChatState();
   const { onOpen } = useDisclosure();
   const [loggedUser, setLoggedUser] = useState();
   const [loading, setLoading] = useState(false);
@@ -147,21 +147,46 @@ const MyChats = ({ fetchAgain }) => {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <Box maxWidth="80%">
-                  <Text fontWeight={selectedChat === chat ? "bold" : "semibold"} fontSize="md" isTruncated>
-                    {!chat.isGroupChat ? getSender(loggedUser, chat.users) : chat.chatName}
-                  </Text>
-                  {chat.latestMessage && (
-                    <Text 
-                      fontSize="sm" 
-                      color={selectedChat === chat ? "whiteAlpha.800" : "gray.500"}
-                      noOfLines={1}
-                      mt={1}
-                    >
-                      <b>{chat.latestMessage.sender.name}: </b>
-                      {chat.latestMessage.content}
-                    </Text>
+                <Box display="flex" alignItems="center" gap={3} maxWidth="85%">
+                  {!chat.isGroupChat ? (
+                    (() => {
+                      const senderObj = getSenderFull(loggedUser, chat.users);
+                      const isOnline = senderObj && onlineUsers && onlineUsers.includes(senderObj._id);
+                      return (
+                        <Avatar
+                          size="sm"
+                          name={senderObj?.name}
+                          src={senderObj?.pic}
+                        >
+                          {isOnline && <AvatarBadge boxSize="1.25em" bg="green.500" />}
+                        </Avatar>
+                      );
+                    })()
+                  ) : (
+                    <Avatar
+                      size="sm"
+                      name={chat.chatName}
+                      bg="teal.500"
+                      color="white"
+                    />
                   )}
+                  <Box isTruncated>
+                    <Text fontWeight={selectedChat === chat ? "bold" : "semibold"} fontSize="md" isTruncated>
+                      {!chat.isGroupChat ? getSender(loggedUser, chat.users) : chat.chatName}
+                    </Text>
+                    {chat.latestMessage && (
+                      <Text 
+                        fontSize="sm" 
+                        color={selectedChat === chat ? "whiteAlpha.800" : "gray.500"}
+                        noOfLines={1}
+                        mt={1}
+                        isTruncated
+                      >
+                        <b>{chat.latestMessage.sender.name}: </b>
+                        {chat.latestMessage.content}
+                      </Text>
+                    )}
+                  </Box>
                 </Box>
                 {unreadCount > 0 && (
                   <Text

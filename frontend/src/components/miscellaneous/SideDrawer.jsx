@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Tooltip, Text, Menu, MenuButton, MenuList, MenuItem, Avatar, MenuDivider, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, Input, Spinner, useToast, Badge } from '@chakra-ui/react';
+import { Box, Button, Tooltip, Text, Menu, MenuButton, MenuList, MenuItem, Avatar, AvatarBadge, MenuDivider, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, Input, Spinner, useToast, Badge } from '@chakra-ui/react';
 import { BellIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import { getSender } from '../../congif/ChatLogics';
 import ProfileModal from './ProfileModal';
@@ -14,7 +14,7 @@ const SideDrawer = () => {
   const [loading, setLoading] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
 
-  const { selectedChat, setSelectedChat, user, setUser, chats, setChats, notification, setNotification } = ChatState();
+  const { selectedChat, setSelectedChat, user, setUser, chats, setChats, notification, setNotification, onlineUsers } = ChatState();
 
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -216,7 +216,11 @@ const SideDrawer = () => {
                     cursor="pointer"
                     name={searchedUser.name}
                     src={searchedUser.pic}
-                  />
+                  >
+                    {onlineUsers && onlineUsers.includes(searchedUser._id) && (
+                      <AvatarBadge boxSize="1.25em" bg="green.500" />
+                    )}
+                  </Avatar>
                   <Box>
                     <Text>{searchedUser.name}</Text>
                     <Text fontSize="xs">

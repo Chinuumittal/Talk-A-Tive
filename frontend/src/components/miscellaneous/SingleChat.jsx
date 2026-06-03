@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text, IconButton, Spinner, FormControl, Input, useToast } from '@chakra-ui/react';
+import { Box, Text, IconButton, Spinner, FormControl, Input, useToast, Avatar, AvatarBadge } from '@chakra-ui/react';
 import { ArrowBackIcon, AttachmentIcon } from '@chakra-ui/icons';
 import { InputGroup, InputRightElement } from '@chakra-ui/react';
 import { ChatState } from '../../context/chatprovider';
@@ -8,10 +8,8 @@ import ProfileModal from './ProfileModal';
 import UpdateGroupChatModal from './UpdateGroupChatModal';
 import axios from 'axios';
 import ScrollableChat from './ScrollableChat';
-import io from 'socket.io-client';
 
-const ENDPOINT = "http://localhost:5000"; 
-let socket, selectedChatCompare;
+let selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [messages, setMessages] = useState([]);
@@ -23,7 +21,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [mediaLoading, setMediaLoading] = useState(false);
   const toast = useToast();
 
-  const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
+  const { user, selectedChat, setSelectedChat, notification, setNotification, socket, onlineUsers } = ChatState();
 
   const fetchMessages = async () => {
     if (!selectedChat) return;
@@ -45,7 +43,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       setMessages(data);
       setLoading(false);
 
-      socket.emit("join chat", selectedChat._id);
+      if (socket) {
+        socket.emit("join chat", selectedChat._id);
+      }
     } catch (error) {
       toast({
         title: "Error Occured!",
@@ -61,7 +61,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
   const sendMessage = async (event) => {
     if (event.key === "Enter" && newMessage) {
-      socket.emit("stop typing", selectedChat._id);
+      if (socket) {
+        socket.emit("stop typing", selectedChat._id);
+      }
       try {
         const config = {
           headers: {
@@ -80,7 +82,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           config
         );
 
-        socket.emit("new message", data);
+        if (socket) {
+          socket.emit("new message", data);
+        }
         setMessages([...messages, data]);
         setFetchAgain(!fetchAgain);
       } catch (error) {
@@ -147,7 +151,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           config
         );
 
-        socket.emit("new message", resData.data);
+        if (socket) {
+          socket.emit("new message", resData.data);
+        }
         setMessages((prevMessages) => [...prevMessages, resData.data]);
         setFetchAgain(!fetchAgain);
         setMediaLoading(false);
@@ -164,17 +170,22 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   };
 
   useEffect(() => {
-    socket = io(ENDPOINT);
-    socket.emit("setup", user);
+    if (!socket) return;
+
+    if (socket.connected) {
+      setSocketConnected(true);
+    }
+
     socket.on("connected", () => setSocketConnected(true));
     socket.on("typing", () => setIsTyping(true));
     socket.on("stop typing", () => setIsTyping(false));
 
     return () => {
-       socket.disconnect();
-    }
-    // eslint-disable-next-line
-  }, [user]);
+      socket.off("connected");
+      socket.off("typing");
+      socket.off("stop typing");
+    };
+  }, [socket]);
 
   useEffect(() => {
     fetchMessages();
@@ -197,10 +208,14 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       }
     };
 
-    socket.on("message recieved", handleMessageRecieved);
+    if (socket) {
+      socket.on("message recieved", handleMessageRecieved);
+    }
 
     return () => {
-      socket.off("message recieved", handleMessageRecieved);
+      if (socket) {
+        socket.off("message recieved", handleMessageRecieved);
+      }
     };
   });
 
@@ -208,7 +223,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     setNewMessage(e.target.value);
 
     // Typing Indicator Logic
-    if (!socketConnected) return;
+    if (!socketConnected || !socket) return;
 
     if (!typing) {
       setTyping(true);
@@ -220,7 +235,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       var timeNow = new Date().getTime();
       var timeDiff = timeNow - lastTypingTime;
       if (timeDiff >= timerLength && typing) {
-        socket.emit("stop typing", selectedChat._id);
+        if (socket) {
+          socket.emit("stop typing", selectedChat._id);
+        }
         setTyping(false);
       }
     }, timerLength);
@@ -230,8 +247,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     <>
       {selectedChat ? (
         <>
-          <Text
-            fontSize={{ base: "28px", md: "30px" }}
+          <Box
             pb={3}
             px={2}
             w="100%"
@@ -248,7 +264,26 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             />
             {!selectedChat.isGroupChat ? (
               <>
-                {getSender(user, selectedChat.users)}
+                <Box display="flex" alignItems="center" gap={3}>
+                  <Avatar
+                    size="sm"
+                    name={getSenderFull(user, selectedChat.users)?.name}
+                    src={getSenderFull(user, selectedChat.users)?.pic}
+                    cursor="pointer"
+                  >
+                    {onlineUsers && onlineUsers.includes(getSenderFull(user, selectedChat.users)?._id) && (
+                      <AvatarBadge boxSize="1.25em" bg="green.500" />
+                    )}
+                  </Avatar>
+                  <Box>
+                    <Text fontSize={{ base: "20px", md: "24px" }} fontWeight="bold" lineHeight="normal">
+                      {getSender(user, selectedChat.users)}
+                    </Text>
+                    <Text fontSize="xs" fontWeight="normal" color={onlineUsers && onlineUsers.includes(getSenderFull(user, selectedChat.users)?._id) ? "green.500" : "gray.500"}>
+                      {onlineUsers && onlineUsers.includes(getSenderFull(user, selectedChat.users)?._id) ? "● Online" : "● Offline"}
+                    </Text>
+                  </Box>
+                </Box>
                 <ProfileModal user={getSenderFull(user, selectedChat.users)} />
               </>
             ) : (
@@ -260,7 +295,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 />
               </>
             )}
-          </Text>
+          </Box>
           <Box
             display="flex"
             flexDir="column"

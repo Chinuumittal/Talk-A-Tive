@@ -1,7 +1,11 @@
 import React from 'react';
-import { Avatar, Box, Text } from '@chakra-ui/react';
+import { Avatar, AvatarBadge, Box, Text } from '@chakra-ui/react';
+import { ChatState } from '../../context/chatprovider';
 
 const UserListItem = ({ user, handleFunction }) => {
+    const { onlineUsers } = ChatState();
+    const isOnline = onlineUsers && onlineUsers.includes(user._id);
+
     return (
         <Box
             onClick={handleFunction}
@@ -26,7 +30,9 @@ const UserListItem = ({ user, handleFunction }) => {
                 cursor="pointer"
                 name={user.name}
                 src={user.pic}
-            />
+            >
+                {isOnline && <AvatarBadge boxSize="1.25em" bg="green.500" />}
+            </Avatar>
             <Box>
                 <Text>{user.name}</Text>
                 <Text fontSize="xs">

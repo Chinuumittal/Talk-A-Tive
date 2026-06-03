@@ -28,6 +28,8 @@ const server = app.listen(port,()=>{
     console.log(`Server is running on port ${port}`);
 });
 
+const activeUsers = new Map(); // userId -> Set of socket.id
+
 const io = new Server(server, {
     pingTimeout: 60000,
     cors: {
@@ -39,7 +41,16 @@ io.on("connection", (socket) => {
     console.log("Connected to socket.io");
 
     socket.on("setup", (userData) => {
+        if (!userData || !userData._id) return;
         socket.join(userData._id);
+        socket.userId = userData._id;
+
+        if (!activeUsers.has(userData._id)) {
+            activeUsers.set(userData._id, new Set());
+        }
+        activeUsers.get(userData._id).add(socket.id);
+
+        io.emit("online users", Array.from(activeUsers.keys()));
         socket.emit("connected");
     });
 
@@ -62,8 +73,15 @@ io.on("connection", (socket) => {
         });
     });
 
-    socket.off("setup", () => {
+    socket.on("disconnect", () => {
         console.log("USER DISCONNECTED");
-        socket.leave(userData._id);
+        if (socket.userId && activeUsers.has(socket.userId)) {
+            const userSockets = activeUsers.get(socket.userId);
+            userSockets.delete(socket.id);
+            if (userSockets.size === 0) {
+                activeUsers.delete(socket.userId);
+            }
+            io.emit("online users", Array.from(activeUsers.keys()));
+        }
     });
 });
